@@ -124,7 +124,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3696903cf2c39046994dcdc4eed4fff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isDestructable: 0
+  isDestructible: 0
+  hasParticles: 0
+  particleSystem: {fileID: 0}
+  destructionDelay: 2
+  objectToFade: {fileID: 0}
+  fadeDuration: 2
+  objectToAnimate: {fileID: 0}
 --- !u!1 &5974238832593043186
 GameObject:
   m_ObjectHideFlags: 0

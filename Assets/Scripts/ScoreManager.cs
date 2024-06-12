@@ -3,11 +3,17 @@ using UnityEngine;
 
 public static class ScoreManager
 {
-    private static List<float> topScores = new List<float>();
+    private static Dictionary<string, List<float>> sceneTopScores = new Dictionary<string, List<float>>();
     private static int maxScores = 10;
 
-    public static void AddScore(float score)
+    public static void AddScore(string sceneName, float score)
     {
+        if (!sceneTopScores.ContainsKey(sceneName))
+        {
+            sceneTopScores[sceneName] = new List<float>();
+        }
+
+        List<float> topScores = sceneTopScores[sceneName];
         topScores.Add(score);
         topScores.Sort();
 
@@ -17,31 +23,48 @@ public static class ScoreManager
         }
     }
 
-    public static List<float> GetTopScores()
+    public static List<float> GetTopScores(string sceneName)
     {
-        return new List<float>(topScores);
+        if (sceneTopScores.ContainsKey(sceneName))
+        {
+            return new List<float>(sceneTopScores[sceneName]);
+        }
+        return new List<float>();
     }
 
     public static void SaveScores()
     {
-        for (int i = 0; i < topScores.Count; i++)
+        foreach (var sceneScores in sceneTopScores)
         {
-            PlayerPrefs.SetFloat("TopScore" + i, topScores[i]);
-        }
+            string sceneName = sceneScores.Key;
+            List<float> topScores = sceneScores.Value;
 
-        PlayerPrefs.SetInt("ScoreCount", topScores.Count);
+            for (int i = 0; i < topScores.Count; i++)
+            {
+                PlayerPrefs.SetFloat(sceneName + "_TopScore" + i, topScores[i]);
+            }
+
+            PlayerPrefs.SetInt(sceneName + "_ScoreCount", topScores.Count);
+        }
         PlayerPrefs.Save();
     }
 
     public static void LoadScores()
     {
-        topScores.Clear();
-        int count = PlayerPrefs.GetInt("ScoreCount", 0);
-        
-        for (int i = 0; i < count; i++)
+        sceneTopScores.Clear();
+
+        foreach (string sceneName in new string[] { "Level 1 (Snow)", "Level 2 (Sand)" }) // Add all scene names here
         {
-            float score = PlayerPrefs.GetFloat("TopScore" + i);
-            topScores.Add(score);
+            int count = PlayerPrefs.GetInt(sceneName + "_ScoreCount", 0);
+            List<float> topScores = new List<float>();
+
+            for (int i = 0; i < count; i++)
+            {
+                float score = PlayerPrefs.GetFloat(sceneName + "_TopScore" + i);
+                topScores.Add(score);
+            }
+
+            sceneTopScores[sceneName] = topScores;
         }
     }
 }

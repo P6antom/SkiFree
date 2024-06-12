@@ -7,60 +7,73 @@ using TMPro;
 
 public class ScoreDisplay : MonoBehaviour
 {
-    public TMP_Text scoreText;
+    private string currentSceneName;
+    public GameObject raceOverPanel;
     public TMP_Text continueInput;
     public Image scoreBackground;
-    public GameObject raceOverPanel;
     public GameObject scorePanel;
+    public TMP_Text scoreText;
 
-    private float startTime; 
-    private float raceTime;
     private float additionalTime = 0f; 
     private Coroutine flashCoroutine;
+    private float startTime; 
+    private float raceTime;
 
-    private bool isFlashing; 
+    private bool isFlashing = false; 
     private bool isRaceFinished = false;
     private bool isTimerStopped = false;
     private bool isRaceStarted = false;
+    private bool waitForEnter = true;
     private Countdown countdownScript;
     
 
     private void Start()
     {
         countdownScript = GetComponent<Countdown>();
+        currentSceneName = SceneManager.GetActiveScene().name;
+        ScoreManager.LoadScores(); // Load scores for all scenes on start
     }
 
     private void Update()
     {
         if (!countdownScript.countdownRunning)
         {
-            scorePanel.gameObject.SetActive(true);
-            Timer();
-            //UIswitch();
+            HandleRaceTimer();
+            HandleRaceFinish();
+        }
+    }
 
-            if (!isFlashing && isRaceFinished)
-            {
-                flashCoroutine = StartCoroutine(FlashText(scoreText));
-                isFlashing = true;
-                continueInput.enabled = true;
-                ScoreManager.AddScore(raceTime);
-                ScoreManager.SaveScores();
-            }
-            if (!isRaceFinished)
-            {
-                string formattedTime = FormatTime(raceTime);
-                scoreText.text = formattedTime;
-            }
-            else if (isRaceFinished && Input.GetKeyDown(KeyCode.Return))
-            {
-                StopCoroutine(flashCoroutine);
-                flashCoroutine = null;
-                scoreBackground.enabled = true;
-                scoreText.enabled = true;
-                continueInput.enabled = false;
-                raceOverPanel.gameObject.SetActive(true);
-                UpdateScoreText();
-            }
+    private void HandleRaceTimer()
+    {
+        scorePanel.gameObject.SetActive(true);
+        Timer();
+    }
+
+    private void HandleRaceFinish()
+    {
+        if (!isFlashing && isRaceFinished)
+        {
+            flashCoroutine = StartCoroutine(FlashText(scoreText));
+            isFlashing = true;
+            continueInput.enabled = true;
+            ScoreManager.AddScore(currentSceneName, raceTime);
+            ScoreManager.SaveScores();
+        }
+        if (!isRaceFinished)
+        {
+            string formattedTime = FormatTime(raceTime);
+            scoreText.text = formattedTime;
+        }
+        else if (isRaceFinished && Input.GetKeyDown(KeyCode.Return) && waitForEnter)
+        {
+            waitForEnter = false;
+            StopCoroutine(flashCoroutine);
+            flashCoroutine = null;
+            scoreBackground.enabled = true;
+            scoreText.enabled = true;
+            continueInput.enabled = false;
+            raceOverPanel.gameObject.SetActive(true);
+            UpdateScoreText();
         }
     }
 
@@ -101,24 +114,24 @@ public class ScoreDisplay : MonoBehaviour
         }
     }
 
-    private string FormatTime(float time) //Format the time into minutes, seconds, and milliseconds
+    private string FormatTime(float time)
     {
         int minutes = Mathf.FloorToInt(time / 60);
         int seconds = Mathf.FloorToInt(time % 60);
-        int milliseconds = Mathf.FloorToInt((time * 1000) % 1000); //removing a zero from % 1000 removes 1 digit
+        int milliseconds = Mathf.FloorToInt((time * 1000) % 1000);
         string formattedTime = string.Format("{0:00}:{1:00}:{2:00}", minutes, seconds, milliseconds);
         return formattedTime;
     }
 
     private void UpdateScoreText()
     {
-        List<float> topScores = ScoreManager.GetTopScores();
+        List<float> topScores = ScoreManager.GetTopScores(currentSceneName);
 
-        string scoreString = "Top Scores:\n"; // Build the score text
+        string scoreString = "Top Scores:\n";
         for (int i = 0; i < topScores.Count; i++)
         {
             string formattedScoreTime = FormatTime(topScores[i]);
-            scoreString += $"{i + 1}. {formattedScoreTime}\n"; //Display scores in order
+            scoreString += $"{i + 1}. {formattedScoreTime}\n";
         }
 
         scoreText.text = scoreString;
@@ -129,7 +142,6 @@ public class ScoreDisplay : MonoBehaviour
         PlayerEvents.OnStartLine += RaceStart;
         PlayerEvents.OnFinishLine += RaceFinished;
         PlayerEvents.OnTimePenalty += PenaltyFlag;
-        //Debug.Log("ScoreDisplay : " + "Subscribe to PlayerEvent"); 
     }
 
     private void OnDisable()
@@ -137,7 +149,6 @@ public class ScoreDisplay : MonoBehaviour
         PlayerEvents.OnStartLine -= RaceStart;
         PlayerEvents.OnFinishLine -= RaceFinished;
         PlayerEvents.OnTimePenalty -= PenaltyFlag;
-        //Debug.Log("ScoreDisplay : " + "Unsubscribe from PlayerEvent");
     }
 
     private void RaceStart()
@@ -148,8 +159,10 @@ public class ScoreDisplay : MonoBehaviour
 
     private void RaceFinished()
     {
-        //Debug.Log("ScoreDisplay : " + "RaceFinished");
-        isRaceFinished = true;
+        if (isRaceStarted)
+        {
+            isRaceFinished = true;
+        }
     }
 
     private void PenaltyFlag()
