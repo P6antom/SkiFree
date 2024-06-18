@@ -54,32 +54,3 @@ public class CollisionController : MonoBehaviour
         Destroy(gameObject);
     }
 }
-    
-    // private string playerTag = "Player";
-
-    // public bool isDestructible;
-    // public bool hasParticles;
-    // private ParticleSystem particleSystem;
-    
-    // private void OnCollisionEnter(Collision collision)
-    // {
-    //     if (collision.collider.CompareTag(playerTag))
-    //     {   
-    //         PlayerEvents.PlayerHit(); //If the collision takes place the playerEvent is trigger and all subscribed scripts executed
-            
-    //         Debug.Log("CollisionController : " + "Execute trigger");
-    //     }
-
-    //     if (isDestructible)
-    //     {
-    //         if (hasParticles && particleSystem != null)
-    //         {
-    //             particleSystem.Play();
-    //             Destroy(gameObject);
-    //         }
-    //         else
-    //         {
-    //             Destroy(gameObject);
-    //         }
-    //     }
-    // }
