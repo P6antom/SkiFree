@@ -12,7 +12,7 @@ public class CollisionController : MonoBehaviour
     public float destructionDelay = 2f; // Delay before destroying the GameObject
     public GameObject objectToFade;
     public float fadeDuration = 2f;
-    public GameObject objectToAnimate;
+    //public GameObject objectToAnimate;
     private Collider objectCollider;
 
     private void Start()
@@ -34,7 +34,7 @@ public class CollisionController : MonoBehaviour
                 {
                     particleSystem.Play();
                     StartCoroutine(DestroyWithDelay());
-                    objectToAnimate.GetComponent<Animator>().SetTrigger("Knocked over");
+                    //objectToAnimate.GetComponent<Animator>().SetTrigger("Knocked over");
                     objectCollider.enabled = false;
                 }
                 else

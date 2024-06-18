@@ -98,7 +98,7 @@ public class ScoreDisplay : MonoBehaviour
 
     public void Quit()
     {
-        Application.Quit();
+        SceneManager.LoadScene("MainMenu");
     }
 
     private void Timer()
